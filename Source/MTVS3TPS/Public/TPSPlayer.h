@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "../../../../Plugins/EnhancedInput/Source/EnhancedInput/Public/InputActionValue.h"
 #include "TPSPlayer.generated.h"
 
 UCLASS()
@@ -34,6 +35,24 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	class UCameraComponent* CameraComp;
 
+	// 입력을 받아서 
+	// IMC_TPSPlayer, IA_Move, IA_Look
+	// 그 입력으로 방향을 만들고
+	// 그 방향으로 계속 이동하고싶다.
 
+	UPROPERTY(EditDefaultsOnly)
+	class UInputMappingContext* IMC_Player;
 
+	UPROPERTY(EditDefaultsOnly)
+	class UInputAction* IA_Move;
+
+	void OnMyActionMove(const FInputActionValue& Value);
+
+	FVector Direction;
+	
+	// 마우스 입력을 받아서 회전값을 처리하고싶다.
+	UPROPERTY(EditDefaultsOnly)
+	class UInputAction* IA_Look;
+
+	void OnMyActionLook(const FInputActionValue& Value);
 };
