@@ -35,6 +35,8 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	class UCameraComponent* CameraComp;
 
+
+	// 이동 s ----------------------------------------------------------------------
 	// 입력을 받아서 
 	// IMC_TPSPlayer, IA_Move, IA_Look
 	// 그 입력으로 방향을 만들고
@@ -55,4 +57,25 @@ public:
 	class UInputAction* IA_Look;
 
 	void OnMyActionLook(const FInputActionValue& Value);
+
+	UPROPERTY(EditDefaultsOnly)
+	class UInputAction* IA_Jump;
+	void OnMyActionJump(const FInputActionValue& Value);
+	// 이동 e ----------------------------------------------------------------------
+
+	// 총쏘기 s ----------------------------------------------------------------------
+	UPROPERTY(EditDefaultsOnly)
+	class USkeletalMeshComponent* GunMeshComp;
+	
+	UPROPERTY(EditDefaultsOnly)
+	class UStaticMeshComponent* SniperMeshComp;
+
+	UPROPERTY(EditDefaultsOnly)
+	class UInputAction* IA_Fire;
+
+	void OnMyActionFire(const FInputActionValue& Value);
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class ABullet> BulletFactory;
+	// 총쏘기 e ----------------------------------------------------------------------
 };

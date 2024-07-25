@@ -6,6 +6,10 @@
 #include "Camera/CameraComponent.h"
 #include "../../../../Plugins/EnhancedInput/Source/EnhancedInput/Public/EnhancedInputSubsystems.h"
 #include "../../../../Plugins/EnhancedInput/Source/EnhancedInput/Public/EnhancedInputComponent.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "Engine/SkeletalMesh.h"
+#include "Bullet.h"
 
 // Sets default values
 ATPSPlayer::ATPSPlayer()
@@ -22,7 +26,41 @@ ATPSPlayer::ATPSPlayer()
 	// 카메라를 생성해서 스프링암에 붙이고싶다.
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
 	CameraComp->SetupAttachment(SpringArmComp);
+	
+	// Mesh에 퀸을 로드해서 넣고싶다.
+	ConstructorHelpers::FObjectFinder<USkeletalMesh> TempMesh(TEXT("/Script/Engine.SkeletalMesh'/Game/Characters/Mannequins/Meshes/SKM_Quinn.SKM_Quinn'"));
 
+	// 만약 파일읽기를 성공했다면
+	if (TempMesh.Succeeded())
+	{
+		GetMesh()->SetSkeletalMesh(TempMesh.Object);
+	}
+
+	// 총들의 에셋을 로드해서 설정하세요.
+	// 총 컴포넌트 처리
+	GunMeshComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("GunMeshComp"));
+	GunMeshComp->SetupAttachment(GetMesh());
+	GunMeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	ConstructorHelpers::FObjectFinder<USkeletalMesh> TempGunMesh(TEXT("/Script/Engine.SkeletalMesh'/Game/TPS/Models/FPWeapon/Mesh/SK_FPGun.SK_FPGun'"));
+
+	// 만약 파일읽기를 성공했다면
+	if (TempGunMesh.Succeeded())
+	{
+		GunMeshComp->SetSkeletalMesh(TempGunMesh.Object);
+	}
+
+	SniperMeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SniperMeshComp"));
+	SniperMeshComp->SetupAttachment(GetMesh());
+	SniperMeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	ConstructorHelpers::FObjectFinder<UStaticMesh> TempSniperMesh(TEXT("/Script/Engine.StaticMesh'/Game/TPS/Models/SniperGun/sniper1.sniper1'"));
+
+	// 만약 파일읽기를 성공했다면
+	if (TempSniperMesh.Succeeded())
+	{
+		SniperMeshComp->SetStaticMesh(TempSniperMesh.Object);
+	}
 }
 
 // Called when the game starts or when spawned
@@ -61,7 +99,7 @@ void ATPSPlayer::Tick(float DeltaTime)
 	Direction = ttt.TransformVector(Direction);
 	// 2. TransformDirection기능 이용해서 방향을 만들어서
 	// 3. 그 방향으로 이동
-	AddMovementInput(Direction, 1);
+	AddMovementInput(Direction);
 	Direction = FVector::ZeroVector;
 }
 
@@ -77,6 +115,9 @@ void ATPSPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 	{
 		input->BindAction(IA_Move, ETriggerEvent::Triggered, this, &ATPSPlayer::OnMyActionMove);
 		input->BindAction(IA_Look, ETriggerEvent::Triggered, this, &ATPSPlayer::OnMyActionLook);
+		
+		input->BindAction(IA_Jump, ETriggerEvent::Started, this, &ATPSPlayer::OnMyActionJump);
+		input->BindAction(IA_Fire, ETriggerEvent::Started, this, &ATPSPlayer::OnMyActionFire);
 	}
 }
 
@@ -94,5 +135,17 @@ void ATPSPlayer::OnMyActionLook(const FInputActionValue& Value)
 
 	AddControllerPitchInput(-v.Y);
 	AddControllerYawInput(v.X);
+}
+
+void ATPSPlayer::OnMyActionJump(const FInputActionValue& Value)
+{
+	Jump();
+}
+
+void ATPSPlayer::OnMyActionFire(const FInputActionValue& Value)
+{
+	// 총알공장에서 총알을 만들어서 배치하고싶다.
+	FTransform t = GunMeshComp->GetComponentTransform();
+	GetWorld()->SpawnActor<ABullet>(BulletFactory, t);
 }
 
