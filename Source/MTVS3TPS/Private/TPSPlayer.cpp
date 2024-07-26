@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "TPSPlayer.h"
@@ -10,6 +10,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Engine/SkeletalMesh.h"
 #include "Bullet.h"
+#include "Blueprint/UserWidget.h"
 
 // Sets default values
 ATPSPlayer::ATPSPlayer()
@@ -17,38 +18,37 @@ ATPSPlayer::ATPSPlayer()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	// ½ºÇÁ¸µ¾ÏÀ» »ı¼ºÇØ¼­ ·çÆ®¿¡ ºÙÀÌ°í½Í´Ù.
+	// ìŠ¤í”„ë§ì•”ì„ ìƒì„±í•´ì„œ ë£¨íŠ¸ì— ë¶™ì´ê³ ì‹¶ë‹¤.
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
 	SpringArmComp->SetupAttachment(RootComponent);
 	SpringArmComp->SetRelativeLocation(FVector(0, 40, 80));
 	SpringArmComp->TargetArmLength = 200;
 
-	// Ä«¸Ş¶ó¸¦ »ı¼ºÇØ¼­ ½ºÇÁ¸µ¾Ï¿¡ ºÙÀÌ°í½Í´Ù.
+	// ì¹´ë©”ë¼ë¥¼ ìƒì„±í•´ì„œ ìŠ¤í”„ë§ì•”ì— ë¶™ì´ê³ ì‹¶ë‹¤.
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
 	CameraComp->SetupAttachment(SpringArmComp);
 	
-	// Mesh¿¡ ÄıÀ» ·ÎµåÇØ¼­ ³Ö°í½Í´Ù.
+	// Meshì— í€¸ì„ ë¡œë“œí•´ì„œ ë„£ê³ ì‹¶ë‹¤.
 	ConstructorHelpers::FObjectFinder<USkeletalMesh> TempMesh(TEXT("/Script/Engine.SkeletalMesh'/Game/Characters/Mannequins/Meshes/SKM_Quinn.SKM_Quinn'"));
 
-	// ¸¸¾à ÆÄÀÏÀĞ±â¸¦ ¼º°øÇß´Ù¸é
+	// ë§Œì•½ íŒŒì¼ì½ê¸°ë¥¼ ì„±ê³µí–ˆë‹¤ë©´
 	if (TempMesh.Succeeded())
 	{
 		GetMesh()->SetSkeletalMesh(TempMesh.Object);
 	}
 
-	// ÃÑµéÀÇ ¿¡¼ÂÀ» ·ÎµåÇØ¼­ ¼³Á¤ÇÏ¼¼¿ä.
-	// ÃÑ ÄÄÆ÷³ÍÆ® Ã³¸®
+	// ì´ë“¤ì˜ ì—ì…‹ì„ ë¡œë“œí•´ì„œ ì„¤ì •í•˜ì„¸ìš”.
+	// ì´ ì»´í¬ë„ŒíŠ¸ ì²˜ë¦¬
 	GunMeshComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("GunMeshComp"));
 	GunMeshComp->SetupAttachment(GetMesh());
 	GunMeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	ConstructorHelpers::FObjectFinder<USkeletalMesh> TempGunMesh(TEXT("/Script/Engine.SkeletalMesh'/Game/TPS/Models/FPWeapon/Mesh/SK_FPGun.SK_FPGun'"));
 
-	// ¸¸¾à ÆÄÀÏÀĞ±â¸¦ ¼º°øÇß´Ù¸é
+	// ë§Œì•½ íŒŒì¼ì½ê¸°ë¥¼ ì„±ê³µí–ˆë‹¤ë©´
 	if (TempGunMesh.Succeeded())
 	{
-		GunMeshComp->SetSkeletalMesh(TempGunMesh.Object);
-	}
+		GunMeshComp->SetSkeletalMesh(TempGunMesh.Object);}
 
 	SniperMeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SniperMeshComp"));
 	SniperMeshComp->SetupAttachment(GetMesh());
@@ -56,7 +56,7 @@ ATPSPlayer::ATPSPlayer()
 
 	ConstructorHelpers::FObjectFinder<UStaticMesh> TempSniperMesh(TEXT("/Script/Engine.StaticMesh'/Game/TPS/Models/SniperGun/sniper1.sniper1'"));
 
-	// ¸¸¾à ÆÄÀÏÀĞ±â¸¦ ¼º°øÇß´Ù¸é
+	// ë§Œì•½ íŒŒì¼ì½ê¸°ë¥¼ ì„±ê³µí–ˆë‹¤ë©´
 	if (TempSniperMesh.Succeeded())
 	{
 		SniperMeshComp->SetStaticMesh(TempSniperMesh.Object);
@@ -68,23 +68,37 @@ void ATPSPlayer::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// IMC_Player¸¦ Ãß°¡ÇÏ°í½Í´Ù.
+	// IMC_Playerë¥¼ ì¶”ê°€í•˜ê³ ì‹¶ë‹¤.
 
-	// 1. ÄÁÆ®·Ñ·¯¸¦ °¡Á®¿Í¼­ PlayerControllerÀÎÁö Ä³½ºÆÃ ÇØº»´Ù.
+	// 1. ì»¨íŠ¸ë¡¤ëŸ¬ë¥¼ ê°€ì ¸ì™€ì„œ PlayerControllerì¸ì§€ ìºìŠ¤íŒ… í•´ë³¸ë‹¤.
 	auto* pc = Cast<APlayerController>(Controller);
-	// 2. Ä³½ºÆÃ ¼º°øÇß´Ù¸é 
+	// 2. ìºìŠ¤íŒ… ì„±ê³µí–ˆë‹¤ë©´ 
 	if (pc)
 	{
-		// 3. ±× °´Ã¼¸¦ ÀÌ¿ëÇØ¼­ EnhancedInputLocalPlayerSubsystemÀ» °¡Á®¿Â´Ù.
+		// 3. ê·¸ ê°ì²´ë¥¼ ì´ìš©í•´ì„œ EnhancedInputLocalPlayerSubsystemì„ ê°€ì ¸ì˜¨ë‹¤.
 		UEnhancedInputLocalPlayerSubsystem* subSys = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(pc->GetLocalPlayer());
-		// 4. SubSys¸¦ ÀÌ¿ëÇØ¼­ AddMappingContext¸¦ ÇÑ´Ù.
+		// 4. SubSysë¥¼ ì´ìš©í•´ì„œ AddMappingContextë¥¼ í•œë‹¤.
 		if (subSys)
 		{
 			subSys->AddMappingContext(IMC_Player, 0);
 		}
 	}
 
+
+	// íƒœì–´ë‚  ë•Œ ì¡°ì¤€ì„ UIì™€ ZoomUIë¥¼ ìƒì„±í•˜ê³ ì‹¶ë‹¤.
+	CrosshairUI = CreateWidget(GetWorld() , CrosshairUIFactory);
+	ZoomUI = CreateWidget(GetWorld() , ZoomUIFactory);
+	// Viewportì— ë¶™ì´ê³ ì‹¶ë‹¤.
+	// ë³´ì´ì§€ì•Šê²Œ í•˜ê³ ì‹¶ë‹¤.
+	if ( CrosshairUI ) {
+		CrosshairUI->AddToViewport();
+	}
+	if ( ZoomUI ) {
+		ZoomUI->AddToViewport();
+	}
 	
+	// íƒœì–´ë‚ ë•Œ Gunë§Œ ë³´ì´ê²Œí•˜ê³ ì‹¶ë‹¤.
+	OnMyActionChooseGun(FInputActionValue());
 }
 
 // Called every frame
@@ -92,13 +106,13 @@ void ATPSPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	// ÀÌµ¿ÇÏ°í ½Í´Ù.
-	// È¸Àü ¹æÇâÀ¸·Î ÀÌµ¿ÇÏ°í½Í´Ù.
-	// 1. ControlRotation À» ÀÌ¿ëÇØ¼­ TransformÀ» ¸¸µé°í
+	// ì´ë™í•˜ê³  ì‹¶ë‹¤.
+	// íšŒì „ ë°©í–¥ìœ¼ë¡œ ì´ë™í•˜ê³ ì‹¶ë‹¤.
+	// 1. ControlRotation ì„ ì´ìš©í•´ì„œ Transformì„ ë§Œë“¤ê³ 
 	FTransform ttt = FTransform(GetControlRotation());
 	Direction = ttt.TransformVector(Direction);
-	// 2. TransformDirection±â´É ÀÌ¿ëÇØ¼­ ¹æÇâÀ» ¸¸µé¾î¼­
-	// 3. ±× ¹æÇâÀ¸·Î ÀÌµ¿
+	// 2. TransformDirectionê¸°ëŠ¥ ì´ìš©í•´ì„œ ë°©í–¥ì„ ë§Œë“¤ì–´ì„œ
+	// 3. ê·¸ ë°©í–¥ìœ¼ë¡œ ì´ë™
 	AddMovementInput(Direction);
 	Direction = FVector::ZeroVector;
 }
@@ -118,6 +132,12 @@ void ATPSPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 		
 		input->BindAction(IA_Jump, ETriggerEvent::Started, this, &ATPSPlayer::OnMyActionJump);
 		input->BindAction(IA_Fire, ETriggerEvent::Started, this, &ATPSPlayer::OnMyActionFire);
+
+		input->BindAction(IA_ChooseGun, ETriggerEvent::Started, this, &ATPSPlayer::OnMyActionChooseGun);
+		input->BindAction(IA_ChooseSniper, ETriggerEvent::Started, this, &ATPSPlayer::OnMyActionChooseSniper);
+		
+		input->BindAction(IA_Zoom, ETriggerEvent::Started, this, &ATPSPlayer::OnMyActionZoomIn);
+		input->BindAction(IA_Zoom, ETriggerEvent::Completed, this, &ATPSPlayer::OnMyActionZoomOut);
 	}
 }
 
@@ -144,8 +164,45 @@ void ATPSPlayer::OnMyActionJump(const FInputActionValue& Value)
 
 void ATPSPlayer::OnMyActionFire(const FInputActionValue& Value)
 {
-	// ÃÑ¾Ë°øÀå¿¡¼­ ÃÑ¾ËÀ» ¸¸µé¾î¼­ ¹èÄ¡ÇÏ°í½Í´Ù.
-	FTransform t = GunMeshComp->GetComponentTransform();
+	// ì´ì•Œê³µì¥ì—ì„œ ì´ì•Œì„ ë§Œë“¤ì–´ì„œ ë°°ì¹˜í•˜ê³ ì‹¶ë‹¤.
+	// FirePositionì´ë¼ëŠ” ì†Œì¼“ì˜ Transformì„ ì‚¬ìš©í•˜ê³ ì‹¶ë‹¤.
+	FTransform t = GunMeshComp->GetSocketTransform(TEXT("FirePosition"));
 	GetWorld()->SpawnActor<ABullet>(BulletFactory, t);
+}
+
+void ATPSPlayer::OnMyActionChooseGun(const FInputActionValue& Value)
+{
+	// 1ë²ˆí‚¤ë¥¼ ëˆ„ë¥´ë©´ Gunë§Œ ë³´ì´ê²Œ SniperëŠ” ì•ˆë³´ì´ê²Œ
+	GunMeshComp->SetVisibility(true);
+	SniperMeshComp->SetVisibility(false);
+
+	// ì¡°ì¤€ì„ , ì¤Œ UIë¥¼ ëª¨ë‘ ë³´ì´ì§€ì•Šê²Œ í•˜ê³ ì‹¶ë‹¤.
+	CrosshairUI->SetVisibility(ESlateVisibility::Hidden);
+	ZoomUI->SetVisibility(ESlateVisibility::Hidden);
+}
+
+// 2ë²ˆí‚¤ë¥¼ ëˆ„ë¥´ë©´ Sniperë§Œ ë³´ì´ê²Œ Gunì€ ì•ˆë³´ì´ê²Œ
+void ATPSPlayer::OnMyActionChooseSniper(const FInputActionValue& Value)
+{
+	GunMeshComp->SetVisibility(false);
+	SniperMeshComp->SetVisibility(true);
+
+	// ì¡°ì¤€ì„  ë³´ì´ê²Œ, ì¤Œ UI ë³´ì´ì§€ì•Šê²Œ í•˜ê³ ì‹¶ë‹¤.
+	CrosshairUI->SetVisibility(ESlateVisibility::Visible);
+	ZoomUI->SetVisibility(ESlateVisibility::Hidden);
+}
+
+void ATPSPlayer::OnMyActionZoomIn(const FInputActionValue& Value)
+{
+	// ì¡°ì¤€ì„  ë³´ì´ê²Œ, ì¤Œ UI ë³´ì´ì§€ì•Šê²Œ í•˜ê³ ì‹¶ë‹¤.
+	CrosshairUI->SetVisibility(ESlateVisibility::Hidden);
+	ZoomUI->SetVisibility(ESlateVisibility::Visible);
+}
+
+void ATPSPlayer::OnMyActionZoomOut(const FInputActionValue& Value)
+{
+	// ì¡°ì¤€ì„  ë³´ì´ê²Œ, ì¤Œ UI ë³´ì´ì§€ì•Šê²Œ í•˜ê³ ì‹¶ë‹¤.
+	CrosshairUI->SetVisibility(ESlateVisibility::Visible);
+	ZoomUI->SetVisibility(ESlateVisibility::Hidden);
 }
 

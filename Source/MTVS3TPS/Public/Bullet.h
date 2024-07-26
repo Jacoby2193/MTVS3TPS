@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -23,15 +23,17 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// Ãæµ¹Ã¼, ¿Ü°üÀ» ¸¸µé°í½Í´Ù.
+	// ì¶©ëŒì²´, ì™¸ê´€ì„ ë§Œë“¤ê³ ì‹¶ë‹¤.
 	UPROPERTY(EditDefaultsOnly)
 	class USphereComponent* SphereComp;
 
 	UPROPERTY(EditDefaultsOnly)
 	class UStaticMeshComponent* MeshComp;
 
-	// ¹ß»çÃ¼ ÄÄÆ÷³ÍÆ®¸¦ ¸¸µé°í½Í´Ù.
+	// ë°œì‚¬ì²´ ì»´í¬ë„ŒíŠ¸ë¥¼ ë§Œë“¤ê³ ì‹¶ë‹¤.
 	UPROPERTY(EditDefaultsOnly)
 	class UProjectileMovementComponent* MovementComp;
 
+private:
+	void Die();
 };
