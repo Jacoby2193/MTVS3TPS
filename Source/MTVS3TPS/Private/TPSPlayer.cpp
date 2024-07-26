@@ -164,14 +164,40 @@ void ATPSPlayer::OnMyActionJump(const FInputActionValue& Value)
 
 void ATPSPlayer::OnMyActionFire(const FInputActionValue& Value)
 {
-	// 총알공장에서 총알을 만들어서 배치하고싶다.
-	// FirePosition이라는 소켓의 Transform을 사용하고싶다.
-	FTransform t = GunMeshComp->GetSocketTransform(TEXT("FirePosition"));
-	GetWorld()->SpawnActor<ABullet>(BulletFactory, t);
+	if (bChooseSniper)
+	{
+		// 카메라위치에서 카메라의 앞방향 100000cm 으로 보고싶다.
+		FHitResult OutHit;
+		FVector Start = CameraComp->GetComponentLocation();
+		FVector End = Start + CameraComp->GetForwardVector() * 100000.f;
+		ECollisionChannel TraceChannel = ECC_Visibility;
+		FCollisionQueryParams Params;
+		Params.AddIgnoredActor(this);
+
+		bool bHit = GetWorld()->LineTraceSingleByChannel(OutHit , Start , End , TraceChannel , Params);
+		if ( bHit )
+		{
+			// 바라본곳에 뭔가 있다.
+			DrawDebugLine(GetWorld(), Start, OutHit.ImpactPoint, FColor::Red, false, 3);
+		}
+		else{
+			// 허공
+			DrawDebugLine(GetWorld() , Start , End , FColor::Red , false , 3);
+		}
+	}
+	else
+	{
+		// 총알공장에서 총알을 만들어서 배치하고싶다.
+		// FirePosition이라는 소켓의 Transform을 사용하고싶다.
+		FTransform t = GunMeshComp->GetSocketTransform(TEXT("FirePosition"));
+		GetWorld()->SpawnActor<ABullet>(BulletFactory , t);
+	}
 }
 
 void ATPSPlayer::OnMyActionChooseGun(const FInputActionValue& Value)
 {
+	bChooseSniper = false;
+
 	// 1번키를 누르면 Gun만 보이게 Sniper는 안보이게
 	GunMeshComp->SetVisibility(true);
 	SniperMeshComp->SetVisibility(false);
@@ -179,11 +205,16 @@ void ATPSPlayer::OnMyActionChooseGun(const FInputActionValue& Value)
 	// 조준선, 줌 UI를 모두 보이지않게 하고싶다.
 	CrosshairUI->SetVisibility(ESlateVisibility::Hidden);
 	ZoomUI->SetVisibility(ESlateVisibility::Hidden);
+
+	// 원래 보이던데로 복원하고싶다.
+	CameraComp->SetFieldOfView(90);
 }
 
 // 2번키를 누르면 Sniper만 보이게 Gun은 안보이게
 void ATPSPlayer::OnMyActionChooseSniper(const FInputActionValue& Value)
 {
+	bChooseSniper = true;
+
 	GunMeshComp->SetVisibility(false);
 	SniperMeshComp->SetVisibility(true);
 
@@ -194,15 +225,31 @@ void ATPSPlayer::OnMyActionChooseSniper(const FInputActionValue& Value)
 
 void ATPSPlayer::OnMyActionZoomIn(const FInputActionValue& Value)
 {
+	// 만약 스나이퍼라면 아래 일을 하고싶다.
+	if ( false == bChooseSniper )
+	{
+		return;
+	}
 	// 조준선 보이게, 줌 UI 보이지않게 하고싶다.
 	CrosshairUI->SetVisibility(ESlateVisibility::Hidden);
 	ZoomUI->SetVisibility(ESlateVisibility::Visible);
+
+	// 가까이 보이게 하고싶다.
+	CameraComp->SetFieldOfView(30);
 }
 
 void ATPSPlayer::OnMyActionZoomOut(const FInputActionValue& Value)
 {
+	// 만약 스나이퍼라면 아래 일을 하고싶다.
+	if ( false == bChooseSniper )
+	{
+		return;
+	}
 	// 조준선 보이게, 줌 UI 보이지않게 하고싶다.
 	CrosshairUI->SetVisibility(ESlateVisibility::Visible);
 	ZoomUI->SetVisibility(ESlateVisibility::Hidden);
+
+	// 원래 보이던데로 복원하고싶다.
+	CameraComp->SetFieldOfView(90);
 }
 

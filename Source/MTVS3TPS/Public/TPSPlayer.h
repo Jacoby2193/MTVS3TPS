@@ -112,5 +112,8 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class ABullet> BulletFactory;
+
+	// 스너이퍼일때만 Zoom을 하고싶다.. UI도...
+	bool bChooseSniper;
 	// 총쏘기 e ----------------------------------------------------------------------
 };
