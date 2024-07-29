@@ -11,6 +11,7 @@
 #include "Engine/SkeletalMesh.h"
 #include "Bullet.h"
 #include "Blueprint/UserWidget.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 ATPSPlayer::ATPSPlayer()
@@ -35,6 +36,7 @@ ATPSPlayer::ATPSPlayer()
 	if (TempMesh.Succeeded())
 	{
 		GetMesh()->SetSkeletalMesh(TempMesh.Object);
+		GetMesh()->SetRelativeLocationAndRotation(FVector(0, 0, -90) , FRotator(0, -90, 0));
 	}
 
 	// 총들의 에셋을 로드해서 설정하세요.
@@ -115,6 +117,9 @@ void ATPSPlayer::Tick(float DeltaTime)
 	// 3. 그 방향으로 이동
 	AddMovementInput(Direction);
 	Direction = FVector::ZeroVector;
+
+	// 카메라의 FOV가 TargetFOV의 값으로 이동하고 싶다.
+	CameraComp->FieldOfView = FMath::Lerp(CameraComp->FieldOfView , TargetFOV , DeltaTime * 5);
 }
 
 // Called to bind functionality to input
@@ -178,11 +183,29 @@ void ATPSPlayer::OnMyActionFire(const FInputActionValue& Value)
 		if ( bHit )
 		{
 			// 바라본곳에 뭔가 있다.
-			DrawDebugLine(GetWorld(), Start, OutHit.ImpactPoint, FColor::Red, false, 3);
+
+			// 폭발VFX를 표현하고싶다.
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BulletImpactVFXFactory, OutHit.ImpactPoint);
+			
+			auto* hitComp = OutHit.GetComponent();
+			float mass = hitComp->GetMass();
+			// 만약 부딪힌 물체의 물리가 켜져있다면
+			if ( hitComp->IsSimulatingPhysics())
+			{
+				// 힘 = 방향 = (부딪힌위치 - 출발위치) * 100000 * Mass
+				FVector force = OutHit.ImpactPoint - OutHit.TraceStart;
+				force.Normalize();
+				force *= 10000 * mass;
+				// hitComp에게 힘을 가하고싶다.
+				hitComp->AddImpulse(force);
+			}
+		
+			
+			//DrawDebugLine(GetWorld(), Start, OutHit.ImpactPoint, FColor::Red, false, 3);
 		}
 		else{
 			// 허공
-			DrawDebugLine(GetWorld() , Start , End , FColor::Red , false , 3);
+			//DrawDebugLine(GetWorld() , Start , End , FColor::Red , false , 3);
 		}
 	}
 	else
@@ -236,6 +259,7 @@ void ATPSPlayer::OnMyActionZoomIn(const FInputActionValue& Value)
 
 	// 가까이 보이게 하고싶다.
 	CameraComp->SetFieldOfView(30);
+	TargetFOV = 30;
 }
 
 void ATPSPlayer::OnMyActionZoomOut(const FInputActionValue& Value)
@@ -250,6 +274,8 @@ void ATPSPlayer::OnMyActionZoomOut(const FInputActionValue& Value)
 	ZoomUI->SetVisibility(ESlateVisibility::Hidden);
 
 	// 원래 보이던데로 복원하고싶다.
-	CameraComp->SetFieldOfView(90);
+	TargetFOV = 90;
+	//CameraComp->SetFieldOfView(90);
+	
 }
 

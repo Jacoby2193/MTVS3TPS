@@ -115,5 +115,15 @@ public:
 
 	// 스너이퍼일때만 Zoom을 하고싶다.. UI도...
 	bool bChooseSniper;
+
+	// 총을쏘면 맞은 자리에 총알자국VFX을 표현하고싶다.
+	UPROPERTY(EditDefaultsOnly)
+	class UParticleSystem* BulletImpactVFXFactory;
+
+
+	// ZoomOut을 하면 부드럽게 원래 시야각으로 돌아오고싶다.
+	// 목표 시야각
+	float TargetFOV = 90;
+
 	// 총쏘기 e ----------------------------------------------------------------------
 };
