@@ -12,6 +12,8 @@
 #include "Bullet.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
+#include "Enemy.h"
+#include "FSMComponent.h"
 
 // Sets default values
 ATPSPlayer::ATPSPlayer()
@@ -188,10 +190,10 @@ void ATPSPlayer::OnMyActionFire(const FInputActionValue& Value)
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BulletImpactVFXFactory, OutHit.ImpactPoint);
 			
 			auto* hitComp = OutHit.GetComponent();
-			float mass = hitComp->GetMass();
 			// 만약 부딪힌 물체의 물리가 켜져있다면
-			if ( hitComp->IsSimulatingPhysics())
+			if ( hitComp && hitComp->IsSimulatingPhysics())
 			{
+				float mass = hitComp->GetMass();
 				// 힘 = 방향 = (부딪힌위치 - 출발위치) * 100000 * Mass
 				FVector force = OutHit.ImpactPoint - OutHit.TraceStart;
 				force.Normalize();
@@ -199,7 +201,18 @@ void ATPSPlayer::OnMyActionFire(const FInputActionValue& Value)
 				// hitComp에게 힘을 가하고싶다.
 				hitComp->AddImpulse(force);
 			}
-		
+
+			// 만약 부딪힌 액터가 AEnemy라면
+			AEnemy* enemy = Cast<AEnemy>(OutHit.GetActor());
+			// OnMyTakeDamage를 호출하고싶다.
+			if ( enemy )
+			{
+				auto* fsm = enemy->GetComponentByClass<UFSMComponent>();
+				if ( fsm )
+				{
+					fsm->OnMyTakeDamage(1);
+				}
+			}
 			
 			//DrawDebugLine(GetWorld(), Start, OutHit.ImpactPoint, FColor::Red, false, 3);
 		}
