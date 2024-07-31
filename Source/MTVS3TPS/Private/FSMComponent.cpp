@@ -4,6 +4,7 @@
 #include "FSMComponent.h"
 #include "TPSPlayer.h"
 #include "Enemy.h"
+#include "Components/CapsuleComponent.h"
 
 // Sets default values for this component's properties
 UFSMComponent::UFSMComponent()
@@ -54,7 +55,7 @@ void UFSMComponent::TickIdle(const float& DeltaTime)
 	// 만약 목적지를 찾았다면
 	if ( Target ) {
 		// 이동상태로 전이하고싶다.
-		State = EEnemyState::MOVE;
+		SetState(EEnemyState::MOVE);
 	}
 }
 
@@ -70,7 +71,7 @@ void UFSMComponent::TickMove(const float& DeltaTime)
 	if ( dist < AttackDistance )
 	{
 		// 공격상태로 전이하고싶다.
-		State = EEnemyState::ATTACK;
+		SetState(EEnemyState::ATTACK);
 	}
 }
 
@@ -91,7 +92,7 @@ void UFSMComponent::TickAttack(const float& DeltaTime)
 		// 그렇지 않다면 
 		else {
 			// 이동상태로 전이하고싶다.
-			State = EEnemyState::MOVE;
+			SetState(EEnemyState::MOVE);
 		}
 	}
 
@@ -100,19 +101,55 @@ void UFSMComponent::TickAttack(const float& DeltaTime)
 void UFSMComponent::TickDamage(const float& DeltaTime)
 {
 	// 시간이 흐르다가
+	CurrentTime += DeltaTime;
 	// 1초가 지나면 
-	// 이동상태로 전이하고싶다.
-	State = EEnemyState::MOVE;
+	if (CurrentTime > 1)
+	{
+		// 이동상태로 전이하고싶다.
+		SetState(EEnemyState::MOVE);
+	}
 }
 
 void UFSMComponent::TickDie(const float& DeltaTime)
 {
 	// 아래로 이동하고싶다.
+	float speed = 200;
+	FVector p = Me->GetActorLocation();
+	FVector velocity = FVector::DownVector * speed;
+	Me->SetActorLocation(p + velocity * DeltaTime);
+
 	
-	// 시간이 흐르다가
-	// 1초가 지나면
-	// 파괴되고싶다.
-	Me->Destroy();
+	CurrentTime += DeltaTime;
+	// 1초가 지나면 
+	if ( CurrentTime > 3 )
+	{
+		// 파괴되고싶다.
+		Me->Destroy();
+	}
+}
+
+void UFSMComponent::SetState(EEnemyState NextState)
+{
+	EEnemyState prevState = State;
+	State = NextState;
+	CurrentTime = 0;
+
+	// 상태가 바뀔때 무엇인가 초기화 하고싶다면 여기서 하세요.
+	switch ( State )
+	{
+	case EEnemyState::IDLE:
+		break;
+	case EEnemyState::MOVE:
+		break;
+	case EEnemyState::ATTACK:
+		break;
+	case EEnemyState::DAMAGE:
+		break;
+	case EEnemyState::DIE:
+		break;
+	default:
+		break;
+	}
 }
 
 void UFSMComponent::OnMyTakeDamage(int32 damage)
@@ -123,13 +160,15 @@ void UFSMComponent::OnMyTakeDamage(int32 damage)
 	if (HP > 0)
 	{
 		// 데미지상태로 전이하고싶다.
-		State = EEnemyState::DAMAGE;
+		SetState(EEnemyState::DAMAGE);
 	}
 	// 그렇지 않다면
 	else
 	{
 		// 죽음상태로 전이하고싶다.
-		State = EEnemyState::DIE;
+		SetState(EEnemyState::DIE);
+		// 캡슐컴포넌트의 충돌설정을 NoCollision으로 하고싶다.
+		Me->GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	}
 
 }

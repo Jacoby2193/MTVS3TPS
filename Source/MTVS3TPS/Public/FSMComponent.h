@@ -42,6 +42,8 @@ public:
 	void TickDamage(const float& DeltaTime);
 	void TickDie(const float& DeltaTime);
 
+	void SetState(EEnemyState NextState);
+
 
 	UPROPERTY()
 	class ATPSPlayer* Target;
