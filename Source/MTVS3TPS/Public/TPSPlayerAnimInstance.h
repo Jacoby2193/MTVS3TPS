@@ -28,4 +28,8 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	bool IsInAir;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	bool IsCrouched;
+
 };

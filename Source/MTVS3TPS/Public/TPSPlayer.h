@@ -61,6 +61,40 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	class UInputAction* IA_Jump;
 	void OnMyActionJump(const FInputActionValue& Value);
+
+	// 걷기 뛰기
+	//  - 입력값, 함수
+	//  - 걷는 속력,
+	//  - 뛰는 속력
+	UPROPERTY(EditDefaultsOnly)
+	float WalkSpeed = 600;
+
+	UPROPERTY(EditDefaultsOnly)
+	float RunSpeed = 1000;
+
+	UPROPERTY(EditDefaultsOnly)
+	class UInputAction* IA_Run;
+
+	void OnMyActionRun(const FInputActionValue& Value);
+	void OnMyActionWalk(const FInputActionValue& Value);
+
+
+	// 왼쪽 컨트롤 버튼을 누르고 있을때는 쪼그리기, 떼면 해제 하고싶다.
+	UPROPERTY(EditDefaultsOnly)
+	class UInputAction* IA_CrouchedCtrl;
+
+	void OnMyActionCrouch(const FInputActionValue& Value);
+	void OnMyActionUnCrouch(const FInputActionValue& Value);
+
+	UPROPERTY(EditDefaultsOnly)
+	class UInputAction* IA_CrouchedC;
+	void OnMyActionCrouchToggle(const FInputActionValue& Value);
+
+	bool bCrouched;
+	
+	UPROPERTY()
+	class UTPSPlayerAnimInstance* Anim;
+
 	// 이동 e ----------------------------------------------------------------------
 
 	// 총쏘기 s ----------------------------------------------------------------------
