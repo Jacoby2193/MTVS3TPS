@@ -16,6 +16,7 @@
 #include "FSMComponent.h"
 #include "TPSPlayerAnimInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Camera/PlayerCameraManager.h"
 
 // Sets default values
 ATPSPlayer::ATPSPlayer()
@@ -84,6 +85,13 @@ ATPSPlayer::ATPSPlayer()
 	if ( TempAnimInst.Succeeded() )
 	{
 		GetMesh()->SetAnimInstanceClass(TempAnimInst.Class);
+	}
+
+	// FireSFV를 로드해서 적용하고싶다.
+	ConstructorHelpers::FObjectFinder<USoundBase> TempFireSFV(TEXT("/Script/Engine.SoundWave'/Game/TPS/Models/SniperGun/Rifle.Rifle'"));
+	if ( TempFireSFV.Succeeded() )
+	{
+		FireSFV = TempFireSFV.Object;
 	}
 
 	// 쭈그리기를 활성화 하고싶다.
@@ -248,6 +256,26 @@ void ATPSPlayer::OnMyActionCrouchToggle(const FInputActionValue& Value)
 
 void ATPSPlayer::OnMyActionFire(const FInputActionValue& Value)
 {
+	// AnimInstance의 PlayFireMontage함수를 호출하고싶다.
+	check(Anim);
+	if ( Anim )
+	{
+		Anim->PlayFireMontage();
+	}
+
+	check(FireSFV);
+	if ( FireSFV )
+	{
+		UGameplayStatics::PlaySound2D(GetWorld() , FireSFV);
+	}
+
+	check(FireCameraShake);
+	if ( FireCameraShake )
+	{
+		GetWorld()->GetFirstPlayerController()->PlayerCameraManager->StartCameraShake(FireCameraShake);
+	}
+
+
 	if ( bChooseSniper )
 	{
 		// 카메라위치에서 카메라의 앞방향 100000cm 으로 보고싶다.

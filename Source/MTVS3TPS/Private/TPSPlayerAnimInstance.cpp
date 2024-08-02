@@ -28,3 +28,8 @@ void UTPSPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	// 캐릭터가 공중에 떠있는가?
 	IsInAir = player->GetCharacterMovement()->IsFalling();
 }
+
+void UTPSPlayerAnimInstance::PlayFireMontage()
+{
+	Montage_Play(FireMontage);
+}

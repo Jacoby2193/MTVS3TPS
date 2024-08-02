@@ -159,5 +159,12 @@ public:
 	// 목표 시야각
 	float TargetFOV = 90;
 
+	// 총쏘기 소리를 내고싶다.
+	UPROPERTY(EditDefaultsOnly)
+	class USoundBase* FireSFV;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UCameraShakeBase> FireCameraShake;
+	
 	// 총쏘기 e ----------------------------------------------------------------------
 };

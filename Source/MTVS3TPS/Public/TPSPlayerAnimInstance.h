@@ -32,4 +32,10 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	bool IsCrouched;
 
+	// 총쏘기 애니메이션을 재생하고싶다. 
+	UPROPERTY(EditDefaultsOnly)
+	class UAnimMontage* FireMontage;
+
+	void PlayFireMontage();
+
 };
