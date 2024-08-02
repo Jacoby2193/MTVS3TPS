@@ -38,4 +38,12 @@ public:
 
 	void PlayFireMontage();
 
+	// 구르기 애니메이션을 재생하고싶다.
+	UPROPERTY(EditDefaultsOnly)
+	class UAnimMontage* DiveRollMontage;
+
+	void PlayDiveRollMontage();
+
+
+
 };

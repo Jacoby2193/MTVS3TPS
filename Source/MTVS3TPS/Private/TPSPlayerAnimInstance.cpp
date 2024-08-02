@@ -33,3 +33,8 @@ void UTPSPlayerAnimInstance::PlayFireMontage()
 {
 	Montage_Play(FireMontage);
 }
+
+void UTPSPlayerAnimInstance::PlayDiveRollMontage()
+{
+	Montage_Play(DiveRollMontage);
+}

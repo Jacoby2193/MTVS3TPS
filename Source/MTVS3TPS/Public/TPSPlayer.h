@@ -95,6 +95,12 @@ public:
 	UPROPERTY()
 	class UTPSPlayerAnimInstance* Anim;
 
+	UPROPERTY(EditDefaultsOnly)
+	class UInputAction* IA_DiveRoll;
+
+	void OnMyActionDiveRoll(const FInputActionValue& Value);
+
+
 	// 이동 e ----------------------------------------------------------------------
 
 	// 총쏘기 s ----------------------------------------------------------------------

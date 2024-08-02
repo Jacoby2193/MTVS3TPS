@@ -182,6 +182,8 @@ void ATPSPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 		input->BindAction(IA_CrouchedCtrl , ETriggerEvent::Completed , this , &ATPSPlayer::OnMyActionUnCrouch);
 
 		input->BindAction(IA_CrouchedC , ETriggerEvent::Started, this , &ATPSPlayer::OnMyActionCrouchToggle);
+		
+		input->BindAction(IA_DiveRoll , ETriggerEvent::Started, this , &ATPSPlayer::OnMyActionDiveRoll);
 
 
 		// 총쏘기
@@ -251,6 +253,14 @@ void ATPSPlayer::OnMyActionCrouchToggle(const FInputActionValue& Value)
 	else 
 	{
 		UnCrouch();
+	}
+}
+
+void ATPSPlayer::OnMyActionDiveRoll(const FInputActionValue& Value)
+{
+	if ( Anim )
+	{
+		Anim->PlayDiveRollMontage();
 	}
 }
 
