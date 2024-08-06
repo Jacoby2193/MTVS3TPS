@@ -67,4 +67,15 @@ public:
 
 	void OnMyTakeDamage(int32 damage = 1);
 
+
+	// 태어날 때 애니메이션을 가져오고싶다.
+	// 나의 상태가 변경될 때 애니메이션의 상태도 동일하게 바꾸고싶다.
+	UPROPERTY()
+	class UEnemyAnimInstance* Anim;
+
+	// 애니메이션에서 발생한 알림을 받고싶다.
+	void OnMyAttackStart();
+	void OnMyAttackEnd();
+	void OnMyHit();
+
 };

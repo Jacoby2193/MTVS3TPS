@@ -5,6 +5,7 @@
 #include "TPSPlayer.h"
 #include "Enemy.h"
 #include "Components/CapsuleComponent.h"
+#include "EnemyAnimInstance.h"
 
 // Sets default values for this component's properties
 UFSMComponent::UFSMComponent()
@@ -25,6 +26,8 @@ void UFSMComponent::BeginPlay()
 	// 태어날 때 오너를 기억하고싶다.
 	Me = Cast<AEnemy>(GetOwner());
 
+	// 태어날 때 애니메이션을 가져오고싶다.
+	Anim = Cast<UEnemyAnimInstance>(Me->GetMesh()->GetAnimInstance());
 }
 
 
@@ -77,24 +80,26 @@ void UFSMComponent::TickMove(const float& DeltaTime)
 
 void UFSMComponent::TickAttack(const float& DeltaTime)
 {
-	// 시간이 흐르다가
-	CurrentTime += DeltaTime;
-	// 만약 현재시간이 AttackWaitTime을 초과한다면
-	if ( CurrentTime > AttackWaitTime )
-	{
-		CurrentTime = 0;
-		// 만약 목적지와의 거리가 공격가능거리라면
-		float dist = Me->GetDistanceTo(Target);
-		if ( dist < AttackDistance ) {
-			// 플레이어에게 데미지를 입히고싶다.
-			UE_LOG(LogTemp , Warning , TEXT("Enemy -> Player에게 Damage"));
-		}
-		// 그렇지 않다면 
-		else {
-			// 이동상태로 전이하고싶다.
-			SetState(EEnemyState::MOVE);
-		}
-	}
+	//// 시간이 흐르다가
+	//CurrentTime += DeltaTime;
+	//// 만약 현재시간이 AttackWaitTime을 초과한다면
+	//if ( CurrentTime > AttackWaitTime )
+	//{
+	//	CurrentTime = 0;
+
+	//	// 애니메이션의 공격 동작을 실행하고싶다.
+	//	// 만약 목적지와의 거리가 공격가능거리라면
+	//	float dist = Me->GetDistanceTo(Target);
+	//	if ( dist < AttackDistance ) {
+	//		// 플레이어에게 데미지를 입히고싶다.
+	//		UE_LOG(LogTemp , Warning , TEXT("Enemy -> Player에게 Damage"));
+	//	}
+	//	// 그렇지 않다면 
+	//	else {
+	//		// 이동상태로 전이하고싶다.
+	//		SetState(EEnemyState::MOVE);
+	//	}
+	//}
 
 }
 
@@ -103,7 +108,7 @@ void UFSMComponent::TickDamage(const float& DeltaTime)
 	// 시간이 흐르다가
 	CurrentTime += DeltaTime;
 	// 1초가 지나면 
-	if (CurrentTime > 1)
+	if ( CurrentTime > 1 )
 	{
 		// 이동상태로 전이하고싶다.
 		SetState(EEnemyState::MOVE);
@@ -118,7 +123,7 @@ void UFSMComponent::TickDie(const float& DeltaTime)
 	FVector velocity = FVector::DownVector * speed;
 	Me->SetActorLocation(p + velocity * DeltaTime);
 
-	
+
 	CurrentTime += DeltaTime;
 	// 1초가 지나면 
 	if ( CurrentTime > 3 )
@@ -132,7 +137,14 @@ void UFSMComponent::SetState(EEnemyState NextState)
 {
 	EEnemyState prevState = State;
 	State = NextState;
+
+	// 애니메이션의 상태도 동기화 하고싶다.
+	Anim->EnemyState = NextState;
+
 	CurrentTime = 0;
+
+
+
 
 	// 상태가 바뀔때 무엇인가 초기화 하고싶다면 여기서 하세요.
 	switch ( State )
@@ -157,7 +169,7 @@ void UFSMComponent::OnMyTakeDamage(int32 damage)
 	// 총에 맞으면 체력을 1 감소시키고싶다.
 	HP -= damage;
 	// 만약 체력이 0보다 크다면 
-	if (HP > 0)
+	if ( HP > 0 )
 	{
 		// 데미지상태로 전이하고싶다.
 		SetState(EEnemyState::DAMAGE);
@@ -171,5 +183,19 @@ void UFSMComponent::OnMyTakeDamage(int32 damage)
 		Me->GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	}
 
+}
+
+void UFSMComponent::OnMyAttackStart()
+{
+	Anim->bAttack = false;
+}
+
+void UFSMComponent::OnMyAttackEnd()
+{
+	Anim->bAttack = true;
+}
+
+void UFSMComponent::OnMyHit()
+{
 }
 
