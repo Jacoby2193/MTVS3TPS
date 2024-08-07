@@ -105,18 +105,23 @@ void UFSMComponent::TickAttack(const float& DeltaTime)
 
 void UFSMComponent::TickDamage(const float& DeltaTime)
 {
-	// 시간이 흐르다가
-	CurrentTime += DeltaTime;
-	// 1초가 지나면 
-	if ( CurrentTime > 1 )
-	{
-		// 이동상태로 전이하고싶다.
-		SetState(EEnemyState::MOVE);
-	}
+	//// 시간이 흐르다가
+	//CurrentTime += DeltaTime;
+	//// 1초가 지나면 
+	//if ( CurrentTime > 1 )
+	//{
+	//	// 이동상태로 전이하고싶다.
+	//	SetState(EEnemyState::MOVE);
+	//}
 }
 
 void UFSMComponent::TickDie(const float& DeltaTime)
 {
+	// 애니메이션 재생이 끝나면 아래로 내려가게 하고싶다.
+	if ( false == bDieDone )
+	{
+		return;
+	}
 	// 아래로 이동하고싶다.
 	float speed = 200;
 	FVector p = Me->GetActorLocation();
@@ -173,12 +178,17 @@ void UFSMComponent::OnMyTakeDamage(int32 damage)
 	{
 		// 데미지상태로 전이하고싶다.
 		SetState(EEnemyState::DAMAGE);
+		//Anim->EnemyMontage
+		int randValue = FMath::RandRange(0 , 1);
+		FString sectionName = FString::Printf(TEXT("Damage%d") , randValue);
+		Me->PlayAnimMontage(Anim->EnemyMontage , 1 , FName(*sectionName));
 	}
 	// 그렇지 않다면
 	else
 	{
 		// 죽음상태로 전이하고싶다.
 		SetState(EEnemyState::DIE);
+		Me->PlayAnimMontage(Anim->EnemyMontage , 1 , TEXT("Die"));
 		// 캡슐컴포넌트의 충돌설정을 NoCollision으로 하고싶다.
 		Me->GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	}
@@ -192,10 +202,32 @@ void UFSMComponent::OnMyAttackStart()
 
 void UFSMComponent::OnMyAttackEnd()
 {
-	Anim->bAttack = true;
+	// 만약 타겟이 공격가능 거리라면 계속 공격하고싶다.
+
+	// 만약 타겟이 공격가능 거리라면 계속 공격하고싶다.
+	float dist = Me->GetDistanceTo(Target);
+	if ( dist < AttackDistance ) {
+		// 플레이어에게 데미지를 입히고싶다.
+		Anim->bAttack = true;
+		UE_LOG(LogTemp , Warning , TEXT("Enemy -> Player에게 Damage"));
+	}
+	// 그렇지 않다면 
+	else {
+		// 이동상태로 전이하고싶다.
+		SetState(EEnemyState::MOVE);
+	}
+
 }
+
+void UFSMComponent::OnMyDamageEnd()
+{
+	// 데미지 애니메이션이 종료되면 이동상태로 전이하고싶다.
+	SetState(EEnemyState::MOVE);
+}
+
 
 void UFSMComponent::OnMyHit()
 {
 }
+
 

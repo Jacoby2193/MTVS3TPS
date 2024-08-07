@@ -16,6 +16,15 @@ class MTVS3TPS_API UEnemyAnimInstance : public UAnimInstance
 	GENERATED_BODY()
 
 public:
+	// 나의 오너 폰(AEnemy)을 기억하고싶다.
+	virtual void NativeInitializeAnimation() override;
+	
+	UPROPERTY()
+	class AEnemy* Enemy;
+
+	UPROPERTY(EditDefaultsOnly)
+	class UAnimMontage* EnemyMontage;
+	
 	// 상태, 공격여부
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	EEnemyState EnemyState;
@@ -31,4 +40,10 @@ public:
 	
 	UFUNCTION()
 	void AnimNotify_Hit();
+
+	UFUNCTION()
+	void AnimNotify_DamageEnd();
+
+	UFUNCTION()
+	void AnimNotify_DieEnd();
 };

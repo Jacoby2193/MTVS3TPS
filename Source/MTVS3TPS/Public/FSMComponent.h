@@ -78,4 +78,11 @@ public:
 	void OnMyAttackEnd();
 	void OnMyHit();
 
+	void OnMyDamageEnd();
+
+	// 애니메이션 재생이 끝나면 아래로 내려가게 하고싶다.
+	bool bDieDone;
+	
+	FORCEINLINE void OnMyDieEnd() { bDieDone = true; }
+
 };

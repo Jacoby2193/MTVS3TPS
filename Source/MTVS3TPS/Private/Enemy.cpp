@@ -4,6 +4,7 @@
 #include "Enemy.h"
 #include "FSMComponent.h"
 #include "EnemyAnimInstance.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
 AEnemy::AEnemy()
@@ -28,6 +29,9 @@ AEnemy::AEnemy()
 	{
 		GetMesh()->SetAnimInstanceClass(TempEnemyAnim.Class);
 	}
+
+	// 이동방향으로 회전하도록 처리하고싶다.
+	GetCharacterMovement()->bOrientRotationToMovement = true;
 
 	FSMComp = CreateDefaultSubobject<UFSMComponent>(TEXT("FSMComp"));
 }

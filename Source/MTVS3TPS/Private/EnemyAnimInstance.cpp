@@ -4,30 +4,52 @@
 #include "EnemyAnimInstance.h"
 #include "Enemy.h"
 
+void UEnemyAnimInstance::NativeInitializeAnimation()
+{
+	Super::NativeInitializeAnimation();
+	Enemy = Cast<AEnemy>(TryGetPawnOwner());
+}
+
 void UEnemyAnimInstance::AnimNotify_AttackStart()
 {
-	AEnemy* enemy = Cast<AEnemy>(TryGetPawnOwner());
-	if ( enemy )
+	if ( Enemy && Enemy->FSMComp )
 	{
-		enemy->FSMComp->OnMyAttackStart();
+		Enemy->FSMComp->OnMyAttackStart();
 	}
 }
 
 void UEnemyAnimInstance::AnimNotify_AttackEnd()
 {
 	// 목적지와의 공격거리를 측정해서 처리해야한다.
-	AEnemy* enemy = Cast<AEnemy>(TryGetPawnOwner());
-	if ( enemy )
+	if ( Enemy && Enemy->FSMComp )
 	{
-		enemy->FSMComp->OnMyAttackEnd();
+		Enemy->FSMComp->OnMyAttackEnd();
 	}
 }
 
 void UEnemyAnimInstance::AnimNotify_Hit()
 {
-	AEnemy* enemy = Cast<AEnemy>(TryGetPawnOwner());
-	if ( enemy )
+	if ( Enemy && Enemy->FSMComp )
 	{
-		enemy->FSMComp->OnMyHit();
+		Enemy->FSMComp->OnMyHit();
+	}
+}
+
+void UEnemyAnimInstance::AnimNotify_DamageEnd()
+{
+	// 몽타주 재생멈춰야한다.
+	Montage_Stop(0.1f, EnemyMontage);
+	if ( Enemy && Enemy->FSMComp )
+	{
+		Enemy->FSMComp->OnMyDamageEnd();
+	}
+}
+
+void UEnemyAnimInstance::AnimNotify_DieEnd()
+{
+	// 넘어지는 애니메이션이 끝났어요~
+	if ( Enemy && Enemy->FSMComp )
+	{
+		Enemy->FSMComp->OnMyDieEnd();
 	}
 }
