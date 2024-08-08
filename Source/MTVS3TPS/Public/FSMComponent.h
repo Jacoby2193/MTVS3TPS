@@ -85,4 +85,13 @@ public:
 	
 	FORCEINLINE void OnMyDieEnd() { bDieDone = true; }
 
+
+	// 체력이 갱신될때 UI도 갱신하고싶다.
+	UPROPERTY()
+	class UEnemyHPWidget* HPWidget;
+
+	// 네비게이션을 이용해서 길찾기를 하고싶다.
+	UPROPERTY()
+	class AAIController* EnemyAI;
+
 };

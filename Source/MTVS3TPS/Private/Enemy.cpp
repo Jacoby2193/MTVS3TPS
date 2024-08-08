@@ -5,6 +5,8 @@
 #include "FSMComponent.h"
 #include "EnemyAnimInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Components/WidgetComponent.h"
+#include "EnemyHPWidget.h"
 
 // Sets default values
 AEnemy::AEnemy()
@@ -33,6 +35,19 @@ AEnemy::AEnemy()
 	// 이동방향으로 회전하도록 처리하고싶다.
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 
+
+
+	HPComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("HPComp"));
+	HPComp->SetupAttachment(RootComponent);
+
+	ConstructorHelpers::FClassFinder<UEnemyHPWidget> TempHPUI(TEXT("/Script/UMGEditor.WidgetBlueprint'/Game/TPS/UI/WBP_EnemyHp.WBP_EnemyHp_C'"));
+
+	if ( TempHPUI.Succeeded() )
+	{
+		HPComp->SetWidgetClass(TempHPUI.Class);
+		HPComp->SetDrawSize(FVector2D(100 , 20));
+		HPComp->SetRelativeLocation(FVector(0 , 0 , 120));
+	}
 	FSMComp = CreateDefaultSubobject<UFSMComponent>(TEXT("FSMComp"));
 }
 
@@ -40,7 +55,9 @@ AEnemy::AEnemy()
 void AEnemy::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	HPWidget = Cast<UEnemyHPWidget>(HPComp->GetWidget());
+	int a = 0;
 }
 
 // Called every frame

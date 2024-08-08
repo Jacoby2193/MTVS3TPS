@@ -32,4 +32,11 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	class UFSMComponent* FSMComp;
 
+
+	// 체력UI를 생성해서 머리위에 배치하고싶다.
+	UPROPERTY(EditDefaultsOnly)
+	class UWidgetComponent* HPComp;
+	
+	UPROPERTY()
+	class UEnemyHPWidget* HPWidget;
 };

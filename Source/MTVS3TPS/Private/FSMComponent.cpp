@@ -6,6 +6,9 @@
 #include "Enemy.h"
 #include "Components/CapsuleComponent.h"
 #include "EnemyAnimInstance.h"
+#include "EnemyHPWidget.h"
+#include "Components/WidgetComponent.h"
+#include "AIController.h"
 
 // Sets default values for this component's properties
 UFSMComponent::UFSMComponent()
@@ -28,6 +31,12 @@ void UFSMComponent::BeginPlay()
 
 	// 태어날 때 애니메이션을 가져오고싶다.
 	Anim = Cast<UEnemyAnimInstance>(Me->GetMesh()->GetAnimInstance());
+
+	HPWidget = Cast<UEnemyHPWidget>(Me->HPComp->GetWidget());
+	// 체력UI를 Full로 채우고싶다.
+	HPWidget->SetHPBar(HP , MaxHP);
+
+	EnemyAI = Cast<AAIController>(Me->GetController());
 }
 
 
@@ -67,7 +76,12 @@ void UFSMComponent::TickMove(const float& DeltaTime)
 	// 목적지를 향해서 이동하고싶다.
 	FVector dir = Target->GetActorLocation() - Me->GetActorLocation();
 	float dist = dir.Size();
-	Me->AddMovementInput(dir.GetSafeNormal());
+	//Me->AddMovementInput(dir.GetSafeNormal());
+
+	FVector destinataion = Target->GetActorLocation();
+	EPathFollowingRequestResult::Type result = EnemyAI->MoveToLocation(destinataion);
+
+	//if ( result== )
 
 	// 조건
 	// 만약 목적지와의 거리가 공격 가능거리라면
@@ -172,7 +186,9 @@ void UFSMComponent::SetState(EEnemyState NextState)
 void UFSMComponent::OnMyTakeDamage(int32 damage)
 {
 	// 총에 맞으면 체력을 1 감소시키고싶다.
-	HP -= damage;
+	HP = FMath::Max(HP - damage, 0);
+	HPWidget->SetHPBar(HP , MaxHP);
+
 	// 만약 체력이 0보다 크다면 
 	if ( HP > 0 )
 	{
