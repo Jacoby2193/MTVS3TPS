@@ -17,6 +17,8 @@
 #include "TPSPlayerAnimInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Camera/PlayerCameraManager.h"
+#include "TPSPlayerMoveComponent.h"
+#include "TPSPlayerFireComponent.h"
 
 // Sets default values
 ATPSPlayer::ATPSPlayer()
@@ -87,15 +89,13 @@ ATPSPlayer::ATPSPlayer()
 		GetMesh()->SetAnimInstanceClass(TempAnimInst.Class);
 	}
 
-	// FireSFV를 로드해서 적용하고싶다.
-	ConstructorHelpers::FObjectFinder<USoundBase> TempFireSFV(TEXT("/Script/Engine.SoundWave'/Game/TPS/Models/SniperGun/Rifle.Rifle'"));
-	if ( TempFireSFV.Succeeded() )
-	{
-		FireSFV = TempFireSFV.Object;
-	}
 
 	// 쭈그리기를 활성화 하고싶다.
 	GetMovementComponent()->GetNavAgentPropertiesRef().bCanCrouch = true;
+
+
+	MoveComp = CreateDefaultSubobject<UTPSPlayerMoveComponent>(TEXT("MoveComp"));
+	FireComp = CreateDefaultSubobject<UTPSPlayerFireComponent>(TEXT("FireComp"));
 }
 
 // Called when the game starts or when spawned
@@ -122,41 +122,13 @@ void ATPSPlayer::BeginPlay()
 	}
 
 
-	// 태어날 때 조준선UI와 ZoomUI를 생성하고싶다.
-	CrosshairUI = CreateWidget(GetWorld() , CrosshairUIFactory);
-	ZoomUI = CreateWidget(GetWorld() , ZoomUIFactory);
-	// Viewport에 붙이고싶다.
-	// 보이지않게 하고싶다.
-	if ( CrosshairUI ) {
-		CrosshairUI->AddToViewport();
-	}
-	if ( ZoomUI ) {
-		ZoomUI->AddToViewport();
-	}
 
-	// 태어날때 Gun만 보이게하고싶다.
-	OnMyActionChooseGun(FInputActionValue());
 }
 
 // Called every frame
 void ATPSPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	// 이동하고 싶다.
-	// 회전 방향으로 이동하고싶다.
-	// 1. ControlRotation 을 이용해서 Transform을 만들고
-	FTransform ttt = FTransform(GetControlRotation());
-	Direction = ttt.TransformVector(Direction);
-	Direction.Z = 0;
-	Direction.Normalize();
-	// 2. TransformDirection기능 이용해서 방향을 만들어서
-	// 3. 그 방향으로 이동
-	AddMovementInput(Direction);
-	Direction = FVector::ZeroVector;
-
-	// 카메라의 FOV가 TargetFOV의 값으로 이동하고 싶다.
-	CameraComp->FieldOfView = FMath::Lerp(CameraComp->FieldOfView , TargetFOV , DeltaTime * 5);
 }
 
 // Called to bind functionality to input
@@ -164,246 +136,6 @@ void ATPSPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-
 	UEnhancedInputComponent* input = CastChecked<UEnhancedInputComponent>(PlayerInputComponent);
-
-	if ( input )
-	{
-		// 이동
-		input->BindAction(IA_Move , ETriggerEvent::Triggered , this , &ATPSPlayer::OnMyActionMove);
-		input->BindAction(IA_Look , ETriggerEvent::Triggered , this , &ATPSPlayer::OnMyActionLook);
-
-		input->BindAction(IA_Jump , ETriggerEvent::Started , this , &ATPSPlayer::OnMyActionJump);
-
-		input->BindAction(IA_Run , ETriggerEvent::Started , this , &ATPSPlayer::OnMyActionRun);
-		input->BindAction(IA_Run , ETriggerEvent::Completed , this , &ATPSPlayer::OnMyActionWalk);
-
-		input->BindAction(IA_CrouchedCtrl , ETriggerEvent::Started , this , &ATPSPlayer::OnMyActionCrouch);
-		input->BindAction(IA_CrouchedCtrl , ETriggerEvent::Completed , this , &ATPSPlayer::OnMyActionUnCrouch);
-
-		input->BindAction(IA_CrouchedC , ETriggerEvent::Started, this , &ATPSPlayer::OnMyActionCrouchToggle);
-		
-		input->BindAction(IA_DiveRoll , ETriggerEvent::Started, this , &ATPSPlayer::OnMyActionDiveRoll);
-
-
-		// 총쏘기
-		input->BindAction(IA_Fire , ETriggerEvent::Started , this , &ATPSPlayer::OnMyActionFire);
-
-		input->BindAction(IA_ChooseGun , ETriggerEvent::Started , this , &ATPSPlayer::OnMyActionChooseGun);
-		input->BindAction(IA_ChooseSniper , ETriggerEvent::Started , this , &ATPSPlayer::OnMyActionChooseSniper);
-
-		input->BindAction(IA_Zoom , ETriggerEvent::Started , this , &ATPSPlayer::OnMyActionZoomIn);
-		input->BindAction(IA_Zoom , ETriggerEvent::Completed , this , &ATPSPlayer::OnMyActionZoomOut);
-	}
-}
-
-void ATPSPlayer::OnMyActionMove(const FInputActionValue& Value)
-{
-	FVector2D v = Value.Get<FVector2D>();
-	Direction.X = v.X;
-	Direction.Y = v.Y;
-	Direction.Normalize();
-}
-
-void ATPSPlayer::OnMyActionLook(const FInputActionValue& Value)
-{
-	FVector2D v = Value.Get<FVector2D>();
-
-	AddControllerPitchInput(-v.Y);
-	AddControllerYawInput(v.X);
-}
-
-void ATPSPlayer::OnMyActionJump(const FInputActionValue& Value)
-{
-	Jump();
-}
-
-void ATPSPlayer::OnMyActionRun(const FInputActionValue& Value)
-{
-	// 최대속력을  RunSpeed 로 하고싶다.
-	GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
-}
-
-void ATPSPlayer::OnMyActionWalk(const FInputActionValue& Value)
-{
-	// 최대속력을  WalkSpeed 로 하고싶다.
-	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
-}
-
-void ATPSPlayer::OnMyActionCrouch(const FInputActionValue& Value)
-{
-	Anim->IsCrouched = true;
-	Crouch();
-}
-
-void ATPSPlayer::OnMyActionUnCrouch(const FInputActionValue& Value)
-{
-	Anim->IsCrouched = false;
-	UnCrouch();
-}
-
-void ATPSPlayer::OnMyActionCrouchToggle(const FInputActionValue& Value)
-{
-	bCrouched = !bCrouched;
-	Anim->IsCrouched = bCrouched;
-	if ( bCrouched )
-	{
-		Crouch();
-	}
-	else 
-	{
-		UnCrouch();
-	}
-}
-
-void ATPSPlayer::OnMyActionDiveRoll(const FInputActionValue& Value)
-{
-	if ( Anim )
-	{
-		Anim->PlayDiveRollMontage();
-	}
-}
-
-void ATPSPlayer::OnMyActionFire(const FInputActionValue& Value)
-{
-	// AnimInstance의 PlayFireMontage함수를 호출하고싶다.
-	check(Anim);
-	if ( Anim )
-	{
-		Anim->PlayFireMontage();
-	}
-
-	check(FireSFV);
-	if ( FireSFV )
-	{
-		UGameplayStatics::PlaySound2D(GetWorld() , FireSFV);
-	}
-
-	check(FireCameraShake);
-	if ( FireCameraShake )
-	{
-		GetWorld()->GetFirstPlayerController()->PlayerCameraManager->StartCameraShake(FireCameraShake);
-	}
-
-
-	if ( bChooseSniper )
-	{
-		// 카메라위치에서 카메라의 앞방향 100000cm 으로 보고싶다.
-		FHitResult OutHit;
-		FVector Start = CameraComp->GetComponentLocation();
-		FVector End = Start + CameraComp->GetForwardVector() * 100000.f;
-		ECollisionChannel TraceChannel = ECC_Visibility;
-		FCollisionQueryParams Params;
-		Params.AddIgnoredActor(this);
-
-		bool bHit = GetWorld()->LineTraceSingleByChannel(OutHit , Start , End , TraceChannel , Params);
-		if ( bHit )
-		{
-			// 바라본곳에 뭔가 있다.
-
-			// 폭발VFX를 표현하고싶다.
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld() , BulletImpactVFXFactory , OutHit.ImpactPoint);
-
-			auto* hitComp = OutHit.GetComponent();
-			// 만약 부딪힌 물체의 물리가 켜져있다면
-			if ( hitComp && hitComp->IsSimulatingPhysics() )
-			{
-				float mass = hitComp->GetMass();
-				// 힘 = 방향 = (부딪힌위치 - 출발위치) * 100000 * Mass
-				FVector force = OutHit.ImpactPoint - OutHit.TraceStart;
-				force.Normalize();
-				force *= 10000 * mass;
-				// hitComp에게 힘을 가하고싶다.
-				hitComp->AddImpulse(force);
-			}
-
-			// 만약 부딪힌 액터가 AEnemy라면
-			AEnemy* enemy = Cast<AEnemy>(OutHit.GetActor());
-			// OnMyTakeDamage를 호출하고싶다.
-			if ( enemy )
-			{
-				auto* fsm = enemy->GetComponentByClass<UFSMComponent>();
-				if ( fsm )
-				{
-					fsm->OnMyTakeDamage(1);
-				}
-			}
-
-			//DrawDebugLine(GetWorld(), Start, OutHit.ImpactPoint, FColor::Red, false, 3);
-		}
-		else {
-			// 허공
-			//DrawDebugLine(GetWorld() , Start , End , FColor::Red , false , 3);
-		}
-	}
-	else
-	{
-		// 총알공장에서 총알을 만들어서 배치하고싶다.
-		// FirePosition이라는 소켓의 Transform을 사용하고싶다.
-		FTransform t = GunMeshComp->GetSocketTransform(TEXT("FirePosition"));
-		GetWorld()->SpawnActor<ABullet>(BulletFactory , t);
-	}
-}
-
-void ATPSPlayer::OnMyActionChooseGun(const FInputActionValue& Value)
-{
-	bChooseSniper = false;
-
-	// 1번키를 누르면 Gun만 보이게 Sniper는 안보이게
-	GunMeshComp->SetVisibility(true);
-	SniperMeshComp->SetVisibility(false);
-
-	// 조준선, 줌 UI를 모두 보이지않게 하고싶다.
-	CrosshairUI->SetVisibility(ESlateVisibility::Hidden);
-	ZoomUI->SetVisibility(ESlateVisibility::Hidden);
-
-	// 원래 보이던데로 복원하고싶다.
-	CameraComp->SetFieldOfView(90);
-}
-
-// 2번키를 누르면 Sniper만 보이게 Gun은 안보이게
-void ATPSPlayer::OnMyActionChooseSniper(const FInputActionValue& Value)
-{
-	bChooseSniper = true;
-
-	GunMeshComp->SetVisibility(false);
-	SniperMeshComp->SetVisibility(true);
-
-	// 조준선 보이게, 줌 UI 보이지않게 하고싶다.
-	CrosshairUI->SetVisibility(ESlateVisibility::Visible);
-	ZoomUI->SetVisibility(ESlateVisibility::Hidden);
-}
-
-void ATPSPlayer::OnMyActionZoomIn(const FInputActionValue& Value)
-{
-	// 만약 스나이퍼라면 아래 일을 하고싶다.
-	if ( false == bChooseSniper )
-	{
-		return;
-	}
-	// 조준선 보이게, 줌 UI 보이지않게 하고싶다.
-	CrosshairUI->SetVisibility(ESlateVisibility::Hidden);
-	ZoomUI->SetVisibility(ESlateVisibility::Visible);
-
-	// 가까이 보이게 하고싶다.
-	CameraComp->SetFieldOfView(30);
-	TargetFOV = 30;
-}
-
-void ATPSPlayer::OnMyActionZoomOut(const FInputActionValue& Value)
-{
-	// 만약 스나이퍼라면 아래 일을 하고싶다.
-	if ( false == bChooseSniper )
-	{
-		return;
-	}
-	// 조준선 보이게, 줌 UI 보이지않게 하고싶다.
-	CrosshairUI->SetVisibility(ESlateVisibility::Visible);
-	ZoomUI->SetVisibility(ESlateVisibility::Hidden);
-
-	// 원래 보이던데로 복원하고싶다.
-	TargetFOV = 90;
-	//CameraComp->SetFieldOfView(90);
-
 }
 

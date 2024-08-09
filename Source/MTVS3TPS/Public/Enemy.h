@@ -34,7 +34,7 @@ public:
 
 
 	// 체력UI를 생성해서 머리위에 배치하고싶다.
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	class UWidgetComponent* HPComp;
 	
 	UPROPERTY()

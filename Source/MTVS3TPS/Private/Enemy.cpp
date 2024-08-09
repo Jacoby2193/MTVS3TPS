@@ -48,6 +48,7 @@ AEnemy::AEnemy()
 		HPComp->SetDrawSize(FVector2D(100 , 20));
 		HPComp->SetRelativeLocation(FVector(0 , 0 , 120));
 	}
+
 	FSMComp = CreateDefaultSubobject<UFSMComponent>(TEXT("FSMComp"));
 }
 
@@ -64,6 +65,17 @@ void AEnemy::BeginPlay()
 void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+
+	// 사용자의 카메라를 찾고
+	FVector target = GetWorld()->GetFirstPlayerController()->PlayerCameraManager->GetCameraLocation();
+	// 그 카메라를 바라보는 방향을 만들어서
+	FVector dir = target - HPComp->GetComponentLocation();
+	dir.Normalize();
+
+	// HPComp를 회전하고싶다.(Billboard 기법)
+	FRotator rot = dir.ToOrientationRotator();
+	HPComp->SetWorldRotation(rot);
 }
 
 // Called to bind functionality to input

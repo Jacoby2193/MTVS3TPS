@@ -9,6 +9,8 @@
 #include "EnemyHPWidget.h"
 #include "Components/WidgetComponent.h"
 #include "AIController.h"
+#include "NavigationSystem.h"
+#include "Navigation/PathFollowingComponent.h"
 
 // Sets default values for this component's properties
 UFSMComponent::UFSMComponent()
@@ -37,6 +39,8 @@ void UFSMComponent::BeginPlay()
 	HPWidget->SetHPBar(HP , MaxHP);
 
 	EnemyAI = Cast<AAIController>(Me->GetController());
+
+	SetPatrolPoint(Me->GetActorLocation() , PatrolPointRadius , PatrolPoint);
 }
 
 
@@ -79,16 +83,40 @@ void UFSMComponent::TickMove(const float& DeltaTime)
 	//Me->AddMovementInput(dir.GetSafeNormal());
 
 	FVector destinataion = Target->GetActorLocation();
-	EPathFollowingRequestResult::Type result = EnemyAI->MoveToLocation(destinataion);
 
-	//if ( result== )
+	auto* ns = UNavigationSystemV1::GetNavigationSystem(GetWorld());
+	
+	FAIMoveRequest MoveRequest;
+	MoveRequest.SetGoalLocation(destinataion);
+	MoveRequest.SetAcceptanceRadius(50);
 
-	// 조건
-	// 만약 목적지와의 거리가 공격 가능거리라면
-	if ( dist < AttackDistance )
+	FPathFindingQuery Query;
+	EnemyAI->BuildPathfindingQuery(MoveRequest , Query);
+	FPathFindingResult r = ns->FindPathSync(Query);
+	// 만약 목적지가 길 위에있다면
+	if (r.Result == ENavigationQueryResult::Success)
 	{
-		// 공격상태로 전이하고싶다.
-		SetState(EEnemyState::ATTACK);
+		// 목적지를 향해서 이동하고싶다.
+		EnemyAI->MoveToLocation(destinataion);
+		// 만약 목적지와의 거리가 공격 가능거리라면
+		if ( dist < AttackDistance )
+		{
+			// 공격상태로 전이하고싶다.
+			SetState(EEnemyState::ATTACK);
+		}
+	}
+	// 그렇지 않다면
+	else
+	{
+		// 랜덤한 위치를 정해서 
+		// 그곳으로 이동하고
+		EPathFollowingRequestResult::Type result = EnemyAI->MoveToLocation(PatrolPoint);
+		// 만약 도착했다면 다시 랜덤한 위치를 정하고싶다.
+		if ( result == EPathFollowingRequestResult::AlreadyAtGoal ||
+			result == EPathFollowingRequestResult::Failed )
+		{
+			SetPatrolPoint(Me->GetActorLocation() , PatrolPointRadius , PatrolPoint);
+		}
 	}
 }
 
@@ -162,8 +190,11 @@ void UFSMComponent::SetState(EEnemyState NextState)
 
 	CurrentTime = 0;
 
-
-
+	// 다음 상태가 이동상태가 아니라면 Ai한테 멈추라고 하고싶다.
+	if (NextState != EEnemyState::MOVE)
+	{
+		EnemyAI->StopMovement();
+	}
 
 	// 상태가 바뀔때 무엇인가 초기화 하고싶다면 여기서 하세요.
 	switch ( State )
@@ -239,6 +270,21 @@ void UFSMComponent::OnMyDamageEnd()
 {
 	// 데미지 애니메이션이 종료되면 이동상태로 전이하고싶다.
 	SetState(EEnemyState::MOVE);
+}
+
+bool UFSMComponent::SetPatrolPoint(FVector origin , float radius , FVector& dest)
+{
+	// 길위의 랜덤한 위치를 정하고싶다.
+	auto* ns = UNavigationSystemV1::GetNavigationSystem(GetWorld());
+	FNavLocation loc;
+	bool isSuccess = ns->GetRandomReachablePointInRadius(origin, radius, loc);
+	// 만약 성공했다면
+	if ( isSuccess )
+	{
+		// 그 위치를 dest에 적용하고싶다.
+		dest = loc.Location;
+	}
+	return isSuccess;
 }
 
 
