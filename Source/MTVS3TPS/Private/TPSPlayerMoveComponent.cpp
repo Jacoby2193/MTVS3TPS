@@ -24,7 +24,6 @@ void UTPSPlayerMoveComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	Me = Cast<ATPSPlayer>(GetOwner());
 
 
 	

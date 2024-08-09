@@ -7,6 +7,12 @@
 #include "../../../../Plugins/EnhancedInput/Source/EnhancedInput/Public/InputActionValue.h"
 #include "TPSPlayer.generated.h"
 
+
+//DECLARE_DELEGATE_OneParam(FDelegate, int32)
+//DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDelegateDynamicMulti)
+
+DECLARE_MULTICAST_DELEGATE_OneParam(FInputBindingDelegate, class UEnhancedInputComponent*)
+
 UCLASS()
 class MTVS3TPS_API ATPSPlayer : public ACharacter
 {
@@ -15,6 +21,8 @@ class MTVS3TPS_API ATPSPlayer : public ACharacter
 public:
 	// Sets default values for this character's properties
 	ATPSPlayer();
+
+	FInputBindingDelegate InputBindingDelegate;
 
 protected:
 	// Called when the game starts or when spawned
@@ -48,8 +56,8 @@ public:
 	class UStaticMeshComponent* SniperMeshComp;
 
 	UPROPERTY(EditDefaultsOnly)
-	class UTPSPlayerMoveComponent* MoveComp;
+	class UTPSPlayerBaseComponent* MoveComp;
 
 	UPROPERTY(EditDefaultsOnly)
-	class UTPSPlayerFireComponent* FireComp;
+	class UTPSPlayerBaseComponent* FireComp;
 };

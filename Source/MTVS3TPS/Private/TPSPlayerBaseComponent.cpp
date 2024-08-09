@@ -1,7 +1,8 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "TPSPlayerBaseComponent.h"
+#include "TPSPlayer.h"
 
 // Sets default values for this component's properties
 UTPSPlayerBaseComponent::UTPSPlayerBaseComponent()
@@ -9,18 +10,26 @@ UTPSPlayerBaseComponent::UTPSPlayerBaseComponent()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
-
-	// ...
+	bWantsInitializeComponent = true;
 }
 
+
+void UTPSPlayerBaseComponent::InitializeComponent()
+{
+	Super::InitializeComponent();
+
+	Me = Cast<ATPSPlayer>(GetOwner());
+
+	Me->InputBindingDelegate.AddUObject(this , &UTPSPlayerBaseComponent::SetupInputBinding);
+	//Me->InputBindingDelegate.AddUFunction(this, TEXT("SetupInputBinding"));
+}
 
 // Called when the game starts
 void UTPSPlayerBaseComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// ...
-	
+
 }
 
 
@@ -30,5 +39,9 @@ void UTPSPlayerBaseComponent::TickComponent(float DeltaTime, ELevelTick TickType
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// ...
+}
+
+void UTPSPlayerBaseComponent::SetupInputBinding(UEnhancedInputComponent* input)
+{
 }
 

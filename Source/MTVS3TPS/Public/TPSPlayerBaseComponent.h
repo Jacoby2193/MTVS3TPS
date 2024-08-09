@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -17,12 +17,20 @@ public:
 	UTPSPlayerBaseComponent();
 
 protected:
+
+	virtual void InitializeComponent() override;
+
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+	virtual void SetupInputBinding(class UEnhancedInputComponent* input);
+
+	UPROPERTY()
+	class ATPSPlayer* Me;
 
 		
 };

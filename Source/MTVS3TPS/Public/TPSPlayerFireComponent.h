@@ -3,13 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/ActorComponent.h"
 #include "../../../../Plugins/EnhancedInput/Source/EnhancedInput/Public/InputActionValue.h"
+#include "TPSPlayerBaseComponent.h"
 #include "TPSPlayerFireComponent.generated.h"
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class MTVS3TPS_API UTPSPlayerFireComponent : public UActorComponent
+class MTVS3TPS_API UTPSPlayerFireComponent : public UTPSPlayerBaseComponent
 {
 	GENERATED_BODY()
 
@@ -25,11 +25,7 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	void SetupInputBinding(class UEnhancedInputComponent* input);
-
-	UPROPERTY()
-	class ATPSPlayer* Me;
-
+	virtual void SetupInputBinding(class UEnhancedInputComponent* input) override;
 
 	UPROPERTY(EditDefaultsOnly)
 	class UInputAction* IA_Fire;

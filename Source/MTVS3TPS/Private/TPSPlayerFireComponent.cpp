@@ -35,8 +35,6 @@ void UTPSPlayerFireComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	Me = Cast<ATPSPlayer>(GetOwner());
-
 	// 태어날 때 조준선UI와 ZoomUI를 생성하고싶다.
 	CrosshairUI = CreateWidget(GetWorld() , CrosshairUIFactory);
 	ZoomUI = CreateWidget(GetWorld() , ZoomUIFactory);
