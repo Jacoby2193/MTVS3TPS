@@ -74,6 +74,20 @@ public:
 	TSubclassOf<class UUserWidget> PlayerHPWidgetFactory;
 
 	class UPlayerHPWidget* PlayerHPUI;
-public:
+
 	void OnMyHitDamage(int32 damage);
+
+	
+	// 구현은 C++
+	//UFUNCTION(BlueprintCallable)
+	//void Test(){
+
+	//}
+	// 구현은 블루프린트에서 하고싶다.
+	UFUNCTION(BlueprintImplementableEvent)
+	void ShowGameOverUI();
+
+	// 현재 선택한 총의 종류를 알고싶다. 구현부는 C++ 블루프린트
+	UFUNCTION(BlueprintNativeEvent)
+	void ChooseSniperGun(bool bSiperGun);
 };

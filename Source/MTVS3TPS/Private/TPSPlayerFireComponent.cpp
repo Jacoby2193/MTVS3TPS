@@ -159,6 +159,8 @@ void UTPSPlayerFireComponent::OnMyActionChooseGun(const FInputActionValue& Value
 {
 	bChooseSniper = false;
 
+	Me->ChooseSniperGun(false);
+
 	// 1번키를 누르면 Gun만 보이게 Sniper는 안보이게
 	Me->GunMeshComp->SetVisibility(true);
 	Me->SniperMeshComp->SetVisibility(false);
@@ -175,6 +177,8 @@ void UTPSPlayerFireComponent::OnMyActionChooseGun(const FInputActionValue& Value
 void UTPSPlayerFireComponent::OnMyActionChooseSniper(const FInputActionValue& Value)
 {
 	bChooseSniper = true;
+
+	Me->ChooseSniperGun(true);
 
 	Me->GunMeshComp->SetVisibility(false);
 	Me->SniperMeshComp->SetVisibility(true);

@@ -50,7 +50,7 @@ ATPSPlayer::ATPSPlayer()
 	// 총들의 에셋을 로드해서 설정하세요.
 	// 총 컴포넌트 처리
 	GunMeshComp = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("GunMeshComp"));
-	GunMeshComp->SetupAttachment(GetMesh(), TEXT("hand_r"));
+	GunMeshComp->SetupAttachment(GetMesh() , TEXT("hand_r"));
 	GunMeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	ConstructorHelpers::FObjectFinder<USkeletalMesh> TempGunMesh(TEXT("/Script/Engine.SkeletalMesh'/Game/TPS/Models/FPWeapon/Mesh/SK_FPGun.SK_FPGun'"));
@@ -122,6 +122,11 @@ void ATPSPlayer::BeginPlay()
 		}
 	}
 
+	// 태어날 때 마우스커서 안보이게 게임에서 입력가지도록 처리하고싶다.
+	UGameplayStatics::SetGamePaused(GetWorld() , false);
+	auto* pcon = GetWorld()->GetFirstPlayerController();
+	pcon->SetShowMouseCursor(false);
+	pcon->SetInputMode(FInputModeGameOnly());
 
 	// 체력UI를 만들고
 	PlayerHPUI = Cast<UPlayerHPWidget>(CreateWidget(GetWorld() , PlayerHPWidgetFactory));
@@ -153,12 +158,23 @@ void ATPSPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 
 void ATPSPlayer::OnMyHitDamage(int32 damage)
 {
-	HP = FMath::Max(0, HP - damage);
+	HP = FMath::Max(0 , HP - damage);
 	PlayerHPUI->UpdateHP(HP , MaxHP);
-	if (HP<=0)
+	if ( HP <= 0 )
 	{
-		UGameplayStatics::SetGamePaused(GetWorld(), true);
 		// 게임오버...
+		UGameplayStatics::SetGamePaused(GetWorld() , true);
+		// 마우스 커서를 보이게 하고싶다.
+		auto* pc = GetWorld()->GetFirstPlayerController();
+		pc->SetShowMouseCursor(true);
+		pc->SetInputMode(FInputModeUIOnly());
+		// 게임오버 UI를 블루프린트에서 보이게 하는 기능을 호출하고싶다.
+		ShowGameOverUI();
 	}
+}
+
+void ATPSPlayer::ChooseSniperGun_Implementation(bool bSiperGun)
+{
+
 }
 
