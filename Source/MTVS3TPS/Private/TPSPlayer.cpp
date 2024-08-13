@@ -19,6 +19,7 @@
 #include "Camera/PlayerCameraManager.h"
 #include "TPSPlayerMoveComponent.h"
 #include "TPSPlayerFireComponent.h"
+#include "PlayerHPWidget.h"
 
 // Sets default values
 ATPSPlayer::ATPSPlayer()
@@ -122,7 +123,13 @@ void ATPSPlayer::BeginPlay()
 	}
 
 
-
+	// 체력UI를 만들고
+	PlayerHPUI = Cast<UPlayerHPWidget>(CreateWidget(GetWorld() , PlayerHPWidgetFactory));
+	// 화면에 보이게하고
+	PlayerHPUI->AddToViewport();
+	// 체력을 UI에 반영하고싶다.
+	HP = MaxHP;
+	PlayerHPUI->UpdateHP(HP , MaxHP);
 }
 
 // Called every frame
@@ -142,5 +149,16 @@ void ATPSPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 
 	//MoveComp->SetupInputBinding(input);
 	//FireComp->SetupInputBinding(input);
+}
+
+void ATPSPlayer::OnMyHitDamage(int32 damage)
+{
+	HP = FMath::Max(0, HP - damage);
+	PlayerHPUI->UpdateHP(HP , MaxHP);
+	if (HP<=0)
+	{
+		UGameplayStatics::SetGamePaused(GetWorld(), true);
+		// 게임오버...
+	}
 }
 

@@ -290,6 +290,13 @@ bool UFSMComponent::SetPatrolPoint(FVector origin , float radius , FVector& dest
 
 void UFSMComponent::OnMyHit()
 {
+	// 만약 타겟과의 거리가 공격거리라면
+	// 각도 측정
+	float dist = Me->GetDistanceTo(Target);
+	if ( dist < AttackDistance ) {
+		// 타겟을 공격하고싶다.
+		Target->OnMyHitDamage(1);
+	}
 }
 
 
