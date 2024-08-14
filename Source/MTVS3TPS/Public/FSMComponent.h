@@ -65,6 +65,7 @@ public:
 	int32 MaxHP = 2;
 	int32 HP = MaxHP;
 
+	UFUNCTION(BlueprintCallable)
 	void OnMyTakeDamage(int32 damage = 1);
 
 

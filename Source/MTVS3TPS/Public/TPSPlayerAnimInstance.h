@@ -44,6 +44,7 @@ public:
 
 	void PlayDiveRollMontage();
 
-
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float Pitch;
 
 };
