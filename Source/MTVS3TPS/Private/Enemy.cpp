@@ -7,6 +7,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/WidgetComponent.h"
 #include "EnemyHPWidget.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "UObject/ConstructorHelpers.h"
 
 // Sets default values
 AEnemy::AEnemy()
@@ -56,9 +58,7 @@ AEnemy::AEnemy()
 void AEnemy::BeginPlay()
 {
 	Super::BeginPlay();
-
 	HPWidget = Cast<UEnemyHPWidget>(HPComp->GetWidget());
-	int a = 0;
 }
 
 // Called every frame

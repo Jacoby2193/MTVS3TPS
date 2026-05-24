@@ -62,8 +62,8 @@ public:
 	// 만약 체력이 0보다 크다면 데미지상태로 전이하고싶다.
 	// 그렇지 않다면 죽음상태로 전이하고싶다.
 
-	int32 MaxHP = 2;
-	int32 HP = MaxHP;
+	float MaxHP = 2;
+	float HP = MaxHP;
 
 	UFUNCTION(BlueprintCallable)
 	void OnMyTakeDamage(int32 damage = 1);

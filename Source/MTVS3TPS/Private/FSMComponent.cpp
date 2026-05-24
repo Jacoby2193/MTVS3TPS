@@ -9,7 +9,9 @@
 #include "EnemyHPWidget.h"
 #include "Components/WidgetComponent.h"
 #include "AIController.h"
+#include "DrawDebugHelpers.h"
 #include "NavigationSystem.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "Navigation/PathFollowingComponent.h"
 
 // Sets default values for this component's properties
@@ -33,7 +35,16 @@ void UFSMComponent::BeginPlay()
 
 	// 태어날 때 애니메이션을 가져오고싶다.
 	Anim = Cast<UEnemyAnimInstance>(Me->GetMesh()->GetAnimInstance());
-
+	
+	// 초기 모든 레이어 링크
+	if (Anim && Me->AnimLayers.Num() > 0 && Me->AnimLayers[0])
+	{
+		for (auto& AnimLayer : Me->AnimLayers)
+		{
+			Anim->LinkAnimClassLayers(AnimLayer);
+		}
+	}
+	
 	HPWidget = Cast<UEnemyHPWidget>(Me->HPComp->GetWidget());
 	// 체력UI를 Full로 채우고싶다.
 	HPWidget->SetHPBar(HP , MaxHP);
@@ -186,7 +197,8 @@ void UFSMComponent::SetState(EEnemyState NextState)
 	State = NextState;
 
 	// 애니메이션의 상태도 동기화 하고싶다.
-	Anim->EnemyState = NextState;
+	if (Anim)
+		Anim->EnemyState = NextState;
 
 	CurrentTime = 0;
 
@@ -200,10 +212,16 @@ void UFSMComponent::SetState(EEnemyState NextState)
 	switch ( State )
 	{
 	case EEnemyState::IDLE:
+		if (Anim && Me->AnimLayers.Num() > 0 && Me->AnimLayers[0])
+			Anim->LinkAnimClassLayers(Me->AnimLayers[0]); // ABP_EnemyIdle
 		break;
 	case EEnemyState::MOVE:
+		if (Anim && Me->AnimLayers.Num() > 0 && Me->AnimLayers[0])
+			Anim->LinkAnimClassLayers(Me->AnimLayers[1]); // ABP_EnemyMove
 		break;
 	case EEnemyState::ATTACK:
+		if (Anim && Me->AnimLayers.Num() > 0 && Me->AnimLayers[0])
+			Anim->LinkAnimClassLayers(Me->AnimLayers[2]); // ABP_EnemyAttack
 		break;
 	case EEnemyState::DAMAGE:
 		break;

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "../../../../../../Program Files/Epic Games/UE_5.7/Engine/Source/Runtime/CoreUObject/Public/Templates/SubclassOf.h"
 #include "Animation/AnimInstance.h"
 #include "TPSPlayerAnimInstance.generated.h"
 

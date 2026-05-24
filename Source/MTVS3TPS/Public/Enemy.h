@@ -39,4 +39,17 @@ public:
 	
 	UPROPERTY()
 	class UEnemyHPWidget* HPWidget;
+	
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	TArray<TSubclassOf<class UAnimInstance>> AnimLayers;
 };
+
+
+
+
+
+
+
+
+
